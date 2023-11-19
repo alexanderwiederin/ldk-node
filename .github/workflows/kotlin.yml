@@ -20,16 +20,47 @@ jobs:
           distribution: temurin
           java-version: 11
 
-      - name: Install LLVM and Clang
+      - name: Set up Rust
+        uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: stable
+          components: clippy
+
+      - name: Install LLVM, Clang and Libssl-dev
         run: |
           sudo apt-get update
-          sudo apt-get install -y llvm clang
+          sudo apt-get install -y llvm clang libssl-dev pkg-config librust-openssl-sys-dev
 
-      - name: Install Android NDK
+#      - name: Set PKG_CONFIG_PATH
+#        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig/" >> $GITHUB_ENV
+
+#      - name: find files
+#        run: |
+#          apt-file update
+#          apt-file list libssl-dev
+
+      - name: Set OPENSSL_DIR
+        run: echo "OPENSSL_DIR=/usr" >> $GITHUB_ENV
+##
+      - name: Set OPENSSL_INCLUDE_DIR
         run: |
-          wget -q https://dl.google.com/android/repository/android-ndk-r26b-linux.zip
-          unzip -q android-ndk-r26b-linux.zip
-          echo "ANDROID_NDK_ROOT=$(pwd)/android-ndk-r26b" >> $GITHUB_ENV
+          echo "OPENSSL_INCLUDE_DIR=/usr/include/openssl" >> $GITHUB_ENV
+          echo "OPENSSL_STATIC=1" >> $GITHUB_ENV 
+
+#
+#      - name: Check OpenSSL headers directory
+#        run: ls -l /usr/include/openssl
+#
+      - name: Set OPENSSL_LIB_DIR
+        run: echo "OPENSSL_LIB_DIR=/usr/lib64" >> $GITHUB_ENV
+
+      - name: Install Android NDK for Android 21
+        run: |
+          wget -q https://dl.google.com/android/repository/android-ndk-r21-linux-x86_64.zip
+          unzip -q android-ndk-r21-linux-x86_64.zip
+          echo "ANDROID_NDK_ROOT=$(pwd)/android-ndk-r21" >> $GITHUB_ENV
+          echo "PATH=$PATH:$(pwd)/android-ndk-r21/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_ENV
+
 
 
 #      - name: Run ktlintCheck on ldk-node-jvm
